@@ -9,7 +9,7 @@
 #======================================================================================================================
 
 #===== Do not modify the following parameter settings, Start =====
-build_openwrt=("s922x" "s922x-n2" "s905x3" "s905x2" "s912" "s912-t95z" "s905" "s905d" "s905d-ki" "s905x" "s905w")
+build_openwrt=("s922x" "s922x-n2" "s922x-reva" "s905x3" "s905x2" "s912" "s912-t95z" "s905" "s905d" "s905d-ki" "s905x" "s905w")
 make_path=${PWD}
 tmp_path=${make_path}/tmp
 out_path=${make_path}/out
@@ -29,26 +29,26 @@ auto_kernel="true"
 BOOT_MB=256
 ROOT_MB=960
 
-tag() {
+tag_msg() {
     echo -e " [ \033[1;92m ${1} \033[0m ]"
 }
 
-process() {
+process_msg() {
     echo -e " [ \033[1;92m ${build} \033[0m - \033[1;92m ${kernel} \033[0m ] ${1}"
 }
 
-error() {
-    echo -e " [ \033[1;91m Error \033[0m ] ${1}"
+warn_msg() {
+    echo -e " [ \033[1;91m Warning \033[0m ] ${1}"
 }
 
-die() {
+error_msg() {
     error "${1}"
     exit 1
 }
 
 loop_setup() {
     loop=$(losetup -P -f --show "${1}")
-    [ ${loop} ] || die "losetup ${1} failed."
+    [ ${loop} ] || error_msg "losetup ${1} failed."
 }
 
 cleanup() {
@@ -157,7 +157,7 @@ extract_armbian() {
         find ./ -type f -name '*.ko' -exec ln -s {} ./ \;
         sync
     else
-        die "Have no kernel files in [ ${kernel_dir} ]"
+        error_msg "Have no kernel files in [ ${kernel_dir} ]"
     fi
 
     cd ${make_path}
@@ -189,20 +189,6 @@ refactor_files() {
     fi
 
     case "${build_op}" in
-    s922x | belink | belinkpro | ugoos)
-        FDTFILE="meson-g12b-gtking-pro.dtb"
-        UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
-        MAINLINE_UBOOT="/lib/u-boot/gtkingpro-u-boot.bin.sd.bin"
-        ANDROID_UBOOT=""
-        AMLOGIC_SOC="s922x"
-        ;;
-    s922x-n2 | odroid-n2)
-        FDTFILE="meson-g12b-gtking-pro-rev_a.dtb"
-        UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
-        MAINLINE_UBOOT="/lib/u-boot/odroid-n2-u-boot.bin.sd.bin"
-        ANDROID_UBOOT=""
-        AMLOGIC_SOC="s922x"
-        ;;
     s905x3 | x96 | hk1 | h96 | ugoosx3)
         FDTFILE="meson-sm1-x96-max-plus-100m.dtb"
         UBOOT_OVERLOAD="u-boot-x96maxplus.bin"
@@ -211,48 +197,18 @@ refactor_files() {
         AMLOGIC_SOC="s905x3"
         ;;
     s905x2 | x96max4g | x96max2g)
-        FDTFILE="meson-g12a-x96-max.dtb"
+        FDTFILE="meson-g12a-u200.dtb"
+        UBOOT_OVERLOAD="u-boot-u200.bin"
+        MAINLINE_UBOOT="/lib/u-boot/u-boot-u200.bin.sd.bin"
+        ANDROID_UBOOT=""
+        AMLOGIC_SOC="S905L3AB"
+        ;;
+    s905x2-km3)
+        FDTFILE="meson-g12a-sei510.dtb"
         UBOOT_OVERLOAD="u-boot-x96max.bin"
         MAINLINE_UBOOT="/lib/u-boot/x96max-u-boot.bin.sd.bin"
         ANDROID_UBOOT=""
         AMLOGIC_SOC="s905x2"
-        ;;
-    s912 | h96proplus | octopus)
-        FDTFILE="meson-gxm-octopus-planet.dtb"
-        UBOOT_OVERLOAD="u-boot-zyxq.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        AMLOGIC_SOC="s912"
-        ;;
-    s912-t95z | s912-t95z-plus)
-        FDTFILE="meson-gxm-t95z-plus.dtb"
-        UBOOT_OVERLOAD="u-boot-s905x-s912.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        AMLOGIC_SOC="s912"
-        ;;
-    s905 | beelinkminimx | mxqpro+)
-        FDTFILE="meson-gxbb-vega-s95-telos.dtb"
-        #FDTFILE="meson-gxbb-mxq-pro-plus.dtb"
-        UBOOT_OVERLOAD="u-boot-s905.bin"
-        #UBOOT_OVERLOAD="u-boot-p201.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        AMLOGIC_SOC="s905"
-        ;;
-    s905d | n1)
-        FDTFILE="meson-gxl-s905d-phicomm-n1.dtb"
-        UBOOT_OVERLOAD="u-boot-n1.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT="/lib/u-boot/u-boot-2015-phicomm-n1.bin"
-        AMLOGIC_SOC="s905d"
-        ;;
-    s905d-ki)
-        FDTFILE="meson-gxl-s905d-mecool-ki-pro.dtb"
-        UBOOT_OVERLOAD="u-boot-p201.bin"
-        MAINLINE_UBOOT=""
-        ANDROID_UBOOT=""
-        AMLOGIC_SOC="s905d"
         ;;
     s905x | hg680p | b860h)
         FDTFILE="meson-gxl-s905x-p212.dtb"
@@ -268,8 +224,66 @@ refactor_files() {
         ANDROID_UBOOT=""
         AMLOGIC_SOC="s905w"
         ;;
+    s905d | n1)
+        FDTFILE="meson-gxl-s905d-phicomm-n1.dtb"
+        UBOOT_OVERLOAD="u-boot-n1.bin"
+        MAINLINE_UBOOT=""
+        ANDROID_UBOOT="/lib/u-boot/u-boot-2015-phicomm-n1.bin"
+        AMLOGIC_SOC="s905d"
+        ;;
+    s905d-ki)
+        FDTFILE="meson-gxl-s905d-mecool-ki-pro.dtb"
+        UBOOT_OVERLOAD="u-boot-p201.bin"
+        MAINLINE_UBOOT=""
+        ANDROID_UBOOT=""
+        AMLOGIC_SOC="s905d"
+        ;;
+    s905 | beelinkminimx | mxqpro+)
+        FDTFILE="meson-gxbb-vega-s95-telos.dtb"
+        #FDTFILE="meson-gxbb-mxq-pro-plus.dtb"
+        UBOOT_OVERLOAD="u-boot-s905.bin"
+        #UBOOT_OVERLOAD="u-boot-p201.bin"
+        MAINLINE_UBOOT=""
+        ANDROID_UBOOT=""
+        AMLOGIC_SOC="s905"
+        ;;
+    s912 | h96proplus | octopus)
+        FDTFILE="meson-gxm-octopus-planet.dtb"
+        UBOOT_OVERLOAD="u-boot-zyxq.bin"
+        MAINLINE_UBOOT=""
+        ANDROID_UBOOT=""
+        AMLOGIC_SOC="s912"
+        ;;
+    s912-t95z | s912-t95z-plus)
+        FDTFILE="meson-gxm-t95z-plus.dtb"
+        UBOOT_OVERLOAD="u-boot-s905x-s912.bin"
+        MAINLINE_UBOOT=""
+        ANDROID_UBOOT=""
+        AMLOGIC_SOC="s912"
+        ;;
+    s922x | belink | belinkpro | ugoos)
+        FDTFILE="meson-g12b-gtking-pro.dtb"
+        UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
+        MAINLINE_UBOOT="/lib/u-boot/gtkingpro-u-boot.bin.sd.bin"
+        ANDROID_UBOOT=""
+        AMLOGIC_SOC="s922x"
+        ;;
+    s922x-n2 | odroid-n2 | n2)
+        FDTFILE="meson-g12b-odroid-n2.dtb"
+        UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
+        MAINLINE_UBOOT="/lib/u-boot/odroid-n2-u-boot.bin.sd.bin"
+        ANDROID_UBOOT=""
+        AMLOGIC_SOC="s922x"
+        ;;
+    s922x-reva)
+        FDTFILE="meson-g12b-gtking-pro.dtb"
+        UBOOT_OVERLOAD="u-boot-gtkingpro-rev-a.bin"
+        MAINLINE_UBOOT=""
+        ANDROID_UBOOT=""
+        AMLOGIC_SOC="s922x"
+        ;;
     *)
-        die "Have no this firmware: [ ${build_op} - ${kernel} ]"
+        error_msg "Have no this firmware: [ ${build_op} - ${kernel} ]"
         ;;
     esac
 
@@ -318,10 +332,13 @@ EOF
 
     # Add drivers
     [ -f etc/modules.d/8189fs ] || echo "8189fs" >etc/modules.d/8189fs
-    [ -f etc/modules.d/8188fu ] || echo "8188fu" >etc/modules.d/8188fu
+    [ -f etc/modules.d/88x2cs ] || echo "88x2cs" >etc/modules.d/88x2cs
+    [ -f etc/modules.d/rtl8188fu ] || echo "rtl8188fu" >etc/modules.d/rtl8188fu
     [ -f etc/modules.d/usb-net-rtl8150 ] || echo "rtl8150" >etc/modules.d/usb-net-rtl8150
     [ -f etc/modules.d/usb-net-rtl8152 ] || echo "r8152" >etc/modules.d/usb-net-rtl8152
     [ -f etc/modules.d/usb-net-asix-ax88179 ] || echo "ax88179_178a" >etc/modules.d/usb-net-asix-ax88179
+    [ -f etc/modules.d/brcmfmac ] || echo "brcmfmac" >etc/modules.d/brcmfmac
+    [ -f etc/modules.d/brcmutil ] || echo "brcmutil" >etc/modules.d/brcmutil
 
     # Add cpustat
     DISTRIB_SOURCECODE="$(cat etc/openwrt_release | grep "DISTRIB_SOURCECODE=" | awk -F "'" '{print $2}')"
@@ -373,6 +390,9 @@ EOF
     # Add some package and script connection
     ln -sf /usr/sbin/openwrt-backup usr/sbin/flippy 2>/dev/null
 
+    # Add rtl8189fs & rtl8188fu driver for s905x(HG680P & B860H), rtl8822cs driver for s905x3(x96max+) in the dev branch kernel
+    #[[ "${build_soc}" == "s905x3" || "${build_soc}" == "s905x" ]] && sed -i "s|stable|dev|g" etc/config/amlogic
+
     # Add wireless master mode
     wireless_mac80211="lib/netifd/wireless/mac80211.sh"
     [ -f "${wireless_mac80211}" ] && {
@@ -413,10 +433,11 @@ EOF
 
     # Edit the uEnv.txt
     if [ ! -f "uEnv.txt" ]; then
-        die "The uEnv.txt File does not exist"
+        error_msg "The uEnv.txt File does not exist"
     else
         old_fdt_dtb="meson-gxl-s905d-phicomm-n1.dtb"
         sed -i "s/${old_fdt_dtb}/${FDTFILE}/g" uEnv.txt
+        sed -i "s/LABEL=ROOTFS/UUID=${ROOTFS_UUID}/g" uEnv.txt
     fi
 
     # Add u-boot.ext for 5.10 kernel
@@ -424,7 +445,7 @@ EOF
         if [ -f "${uboot_path}/${UBOOT_OVERLOAD}" ]; then
             cp -f ${uboot_path}/${UBOOT_OVERLOAD} u-boot.ext && sync && chmod +x u-boot.ext
         else
-            die "${build_usekernel} have no the 5.10 kernel u-boot file: [ ${UBOOT_OVERLOAD} ]"
+            error_msg "${build_usekernel} have no the 5.10 kernel u-boot file: [ ${UBOOT_OVERLOAD} ]"
         fi
     fi
 
@@ -485,10 +506,10 @@ copy2image() {
 
     mkdir -p ${bootfs} ${rootfs} && sync
     if ! mount ${loop}p1 ${bootfs}; then
-        die "mount ${loop}p1 failed!"
+        error_msg "mount ${loop}p1 failed!"
     fi
     if ! mount ${loop}p2 ${rootfs}; then
-        die "mount ${loop}p2 failed!"
+        error_msg "mount ${loop}p2 failed!"
     fi
 
     cp -rf ${boot}/* ${bootfs}
@@ -534,7 +555,7 @@ get_kernels() {
 
 show_kernels() {
     if [ ${#build_kernel[*]} = 0 ]; then
-        die "No kernel files in [ ${kernel_path} ] directory!"
+        error_msg "No kernel files in [ ${kernel_path} ] directory!"
     else
         show_list "${build_kernel[*]}" "kernel"
     fi
@@ -552,14 +573,14 @@ choose_firmware() {
     show_list "${firmwares[*]}" "firmware"
     choose_files ${#firmwares[*]} "firmware"
     firmware=${firmwares[opt]}
-    tag ${firmware} && echo
+    tag_msg ${firmware} && echo
 }
 
 choose_kernel() {
     show_kernels
     choose_files ${#build_kernel[*]} "kernel"
     kernel=${build_kernel[opt]}
-    tag ${kernel} && echo
+    tag_msg ${kernel} && echo
 }
 
 choose_files() {
@@ -577,7 +598,7 @@ choose_files() {
                 break
             else
                 ((i++ >= 2)) && exit 1
-                error "Wrong type, try again!"
+                warn_msg "Wrong type, try again!"
                 sleep 1s
             fi
         done
@@ -594,18 +615,19 @@ choose_build() {
     case $pause in
     11 | s922x) build="s922x" ;;
     12 | s922x-n2) build="s922x-n2" ;;
-    13 | s905x3) build="s905x3" ;;
-    14 | s905x2) build="s905x2" ;;
-    15 | s912) build="s912" ;;
-    16 | s912-t95z) build="s912-t95z" ;;
-    17 | s905) build="s905" ;;
-    18 | s905d) build="s905d" ;;
-    19 | s905d-ki) build="s905d-ki" ;;
-    20 | s905x) build="s905x" ;;
-    21 | s905w) build="s905w" ;;
-    *) die "Have no this Amlogic SoC" ;;
+    13 | s922x-reva) build="s922x-reva" ;;
+    14 | s905x3) build="s905x3" ;;
+    15 | s905x2) build="s905x2" ;;
+    16 | s912) build="s912" ;;
+    17 | s912-t95z) build="s912-t95z" ;;
+    18 | s905) build="s905" ;;
+    19 | s905d) build="s905d" ;;
+    20 | s905d-ki) build="s905d-ki" ;;
+    21 | s905x) build="s905x" ;;
+    22 | s905w) build="s905w" ;;
+    *) error_msg "Have no this Amlogic SoC" ;;
     esac
-    tag ${build}
+    tag_msg ${build}
 }
 
 set_rootsize() {
@@ -617,11 +639,11 @@ set_rootsize() {
  if you don't know what this means, press Enter to keep default: " rootsize
         [ ${rootsize} ] || rootsize=${ROOT_MB}
         if [[ "${rootsize}" -ge "256" ]]; then
-            tag ${rootsize} && echo
+            tag_msg ${rootsize} && echo
             break
         else
             ((i++ >= 2)) && exit 1
-            error "Invalid numeric input, try again!\n"
+            warn_msg "Invalid numeric input, try again!\n"
             sleep 1s
         fi
     done
@@ -667,7 +689,7 @@ Options:
 EOF
 }
 
-[ $(id -u) = 0 ] || die "please run this script as root: [ sudo ./make ]"
+[ $(id -u) = 0 ] || error_msg "please run this script as root: [ sudo ./make ]"
 echo -e "Welcome to use the OpenWrt packaging tool! \n"
 echo -e "Server space usage before starting to compile: \n$(df -hT ${PWD}) \n"
 
@@ -699,7 +721,7 @@ while [ "${1}" ]; do
             : ${build:="all"}
             shift
         else
-            die "Invalid -b parameter [ ${2} ]!"
+            error_msg "Invalid -b parameter [ ${2} ]!"
         fi
         ;;
     -k | --kernelversion)
@@ -718,7 +740,7 @@ while [ "${1}" ]; do
             : ${kernel:="all"}
             shift
         else
-            die "Invalid -k parameter [ ${2} ]!"
+            error_msg "Invalid -k parameter [ ${2} ]!"
         fi
         ;;
     -a | --autokernel)
@@ -726,7 +748,7 @@ while [ "${1}" ]; do
             auto_kernel="${2}"
             shift
         else
-            die "Invalid -a parameter [ ${2} ]!"
+            error_msg "Invalid -a parameter [ ${2} ]!"
         fi
         ;;
     -v | --versionbranch)
@@ -734,7 +756,7 @@ while [ "${1}" ]; do
             version_branch="${2}"
             shift
         else
-            die "Invalid -v parameter [ ${2} ]!"
+            error_msg "Invalid -v parameter [ ${2} ]!"
         fi
         ;;
     -s | --size)
@@ -742,7 +764,7 @@ while [ "${1}" ]; do
             rootsize="${2}"
             shift
         else
-            die "Invalid -s parameter [ ${2} ]!"
+            error_msg "Invalid -s parameter [ ${2} ]!"
         fi
         ;;
     -h | --help)
@@ -757,18 +779,18 @@ while [ "${1}" ]; do
         show_kernels && exit 0
         ;;
     *)
-        die "Invalid option [ ${1} ]!"
+        error_msg "Invalid option [ ${1} ]!"
         ;;
     esac
     shift
 done
 
 if [ ${#firmwares[*]} = 0 ]; then
-    die "No the [ openwrt-armvirt-64-default-rootfs.tar.gz ] file in [ ${openwrt_path} ] directory!"
+    error_msg "No the [ openwrt-armvirt-64-default-rootfs.tar.gz ] file in [ ${openwrt_path} ] directory!"
 fi
 
 if [ ${#build_kernel[*]} = 0 ]; then
-    die "No this kernel files in [ ${kernel_path} ] directory!"
+    error_msg "No this kernel files in [ ${kernel_path} ] directory!"
 fi
 
 [ ${firmware} ] && echo " firmware   ==>   ${firmware}"
@@ -811,17 +833,17 @@ for b in ${build_openwrt[*]}; do
 
             kernel=${x}
             build=${b}
-            process " (1/6) extract armvirt files."
+            process_msg " (1/6) extract armvirt files."
             extract_openwrt
-            process " (2/6) extract armbian files."
+            process_msg " (2/6) extract armbian files."
             extract_armbian ${b}
-            process " (3/6) refactor related files."
+            process_msg " (3/6) refactor related files."
             refactor_files ${b} ${x}
-            process " (4/6) make openwrt image."
+            process_msg " (4/6) make openwrt image."
             make_image ${b}
-            process " (5/6) copy files to image."
+            process_msg " (5/6) copy files to image."
             copy2image ${b}
-            process " (6/6) cleanup tmp files."
+            process_msg " (6/6) cleanup tmp files."
             cleanup
 
             echo -e "(${k}.${i}) OpenWrt packaged successfully. \n"
