@@ -11,7 +11,7 @@ on:
   repository_dispatch:
   workflow_dispatch:
   #schedule:
-  
+    #- cron: '0 17 * * 0'
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
@@ -44,21 +44,18 @@ jobs:
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
         echo "COMPILE_STARTINGTIME=$(date +"%Y.%m.%d.%H%M")" >> $GITHUB_ENV
-
     - name: Clone source code
       working-directory: /workdir
       run: |
         df -hT $PWD
         git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-
     - name: Load custom feeds
       run: |
         [ -e $FEEDS_CONF ] && cp -f $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
-
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
 
@@ -72,7 +69,6 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
-
     - name: Download package
       id: package
       run: |
@@ -81,7 +77,6 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-
     - name: Compile the firmware
       id: compile
       run: |
@@ -92,7 +87,6 @@ jobs:
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=$(cat DEVICE_NAME)" >> $GITHUB_ENV
         echo "FILE_DATE=$(date +"%Y.%m.%d.%H%M")" >> $GITHUB_ENV
         echo "::set-output name=status::success"
-
     - name: Build OpenWrt firmware
       if: steps.compile.outputs.status == 'success' && !cancelled()
       id: build
@@ -100,14 +94,16 @@ jobs:
         [ -d openwrt-armvirt ] || mkdir -p openwrt-armvirt
         cp -f openwrt/bin/targets/*/*/*.tar.gz openwrt-armvirt/ && sync
         sudo chmod +x make
-        sudo ./make -d -b s905-k 5.10.90
+        #sudo ./make -d -b s905x3_s905x -k 5.4.170_5.15.13 -v dev
+        #sudo rm -rf amlogic-s9xxx/amlogic-kernel/* && sync
+        #sudo ./make -d -b s922x_s922x-n2_s922x-reva_s905d_s912_s912-t95z_s905x2_s905_s905d-ki_s905x3_s905x -k 5.4.170_5.15.13
+        sudo ./make -d -b s905x2 -k 5.4.170_5.15.13
         [ -d ipk ] || mkdir -p ipk
         cp -rf $(find openwrt/bin/packages/ -type f -name "*.ipk") ipk/ && sync
         sudo tar -czf ipk.tar.gz ipk && mv -f ipk.tar.gz out/ && sync
         echo "PACKAGED_OUTPUTPATH=${PWD}/out" >> $GITHUB_ENV
         echo "PACKAGED_OUTPUTDATE=$(date +"%Y.%m.%d.%H%M")" >> $GITHUB_ENV
         echo "::set-output name=status::success"
-
     - name: Upload OpenWrt Firmware to Release
       uses: ncipollo/release-action@v1
       if: steps.build.outputs.status == 'success' && !cancelled()
@@ -125,4 +121,3 @@ jobs:
           Default WIFI name: OpenWrt
           Default WIFI password: none
           Install to EMMC: Login to OpenWrt → System → Amlogic Service → Install OpenWrt
-
