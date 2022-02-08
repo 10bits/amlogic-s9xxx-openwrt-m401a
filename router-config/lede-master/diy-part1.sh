@@ -8,7 +8,6 @@
 
 # Uncomment a feed source
   sed -i '$a src-git  helloworld https://github.com/fw876/helloworld' feeds.conf.default
-  sed -i '$a src-git  uwe5621-aml https://github.com/Stane1983/uwe5621-aml' feeds.conf.default
 # Add a feed source
 # sed -i '$a src-git lienol https://github.com/Lienol/openwrt-package' feeds.conf.default
 #
