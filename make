@@ -204,8 +204,8 @@ refactor_files() {
         AMLOGIC_SOC="s922x"
         ;;
     s905x3 | x96 | hk1 | h96 | ugoosx3)
-        FDTFILE="meson-sm1-x96-max-plus-100m.dtb"
-        UBOOT_OVERLOAD="u-boot-x96maxplus.bin"
+        FDTFILE="meson-g12a-u200.dtb"
+        UBOOT_OVERLOAD="u-boot-u200.bin"
         MAINLINE_UBOOT="/lib/u-boot/x96maxplus-u-boot.bin.sd.bin"
         ANDROID_UBOOT="/lib/u-boot/hk1box-bootloader.img"
         AMLOGIC_SOC="s905x3"
