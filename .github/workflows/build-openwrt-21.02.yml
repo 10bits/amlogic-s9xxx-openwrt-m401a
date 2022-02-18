@@ -10,9 +10,11 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: router-config/lede-master/feeds.conf.default
-  CONFIG_FILE: router-config/lede-master/.config
-  DIY_P1_SH: router-config/lede-master/diy-part1.sh
-  DIY_P2_SH: router-config/lede-master/diy-part2.sh
+  CONFIG_FILE: router-config/openwrt-21.02/.config
+  DIY_P1_SH: router-config/openwrt-21.02/diy-part1.sh
+  DIY_P2_SH: router-config/openwrt-21.02/diy-part2.sh
+  UPLOAD_BIN_DIR: false
+  UPLOAD_FIRMWARE: true
   TZ: Asia/Shanghai
 
 jobs:
@@ -84,5 +86,4 @@ jobs:
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=$(cat DEVICE_NAME)" >> $GITHUB_ENV
         echo "FILE_DATE=$(date +"%Y.%m.%d.%H%M")" >> $GITHUB_ENV
-        echo "::set-output name=status::success"
 
