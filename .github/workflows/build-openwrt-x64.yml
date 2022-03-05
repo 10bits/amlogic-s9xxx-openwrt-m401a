@@ -10,10 +10,10 @@ on:
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
-  FEEDS_CONF: router/lede-master/feeds.conf.default
-  CONFIG_FILE: router/lede-master/x64.config
-  DIY_P1_SH: router/lede-master/diy-part1.sh
-  DIY_P2_SH: router/lede-master/diy-part2.sh
+  FEEDS_CONF: router-config/lede-master/feeds.conf.default
+  CONFIG_FILE: router-config/lede-master/x64.config
+  DIY_P1_SH: router-config/lede-master/diy-part1.sh
+  DIY_P2_SH: router-config/lede-master/diy-part2.sh
   UPLOAD_BIN_DIR: ture
   UPLOAD_FIRMWARE: ture
   TZ: Asia/Shanghai
