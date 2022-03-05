@@ -94,7 +94,7 @@ jobs:
         name: Bin_openwrt_x86_64_${{ env.DEVICE_NAME }}_${{ env.FILE_DATE }}
         path: openwrt/bin
         retention-days: ${{ env.RECENT_LASTEST }}
-	
+
     - name: Upload firmware directory
       uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
