@@ -211,9 +211,9 @@ refactor_files() {
         AMLOGIC_SOC="s905x3"
         ;;
     s905x2 | x96max4g | x96max2g)
-        FDTFILE="meson-g12a-u200.dtb"
-        UBOOT_OVERLOAD="u-boot-u200.bin"
-        MAINLINE_UBOOT="/lib/u-boot-u200.bin.sd.bin"
+        FDTFILE="meson-g12a-e900v22c.dtb"
+        UBOOT_OVERLOAD="e900v22c-u-boot.bin"
+        MAINLINE_UBOOT="/lib/e900v22c-u-boot.bin.sd.bin"
         ANDROID_UBOOT=""
         AMLOGIC_SOC="s905x2"
         ;;
