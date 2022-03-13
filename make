@@ -210,7 +210,7 @@ refactor_files() {
         ANDROID_UBOOT="/lib/u-boot/hk1box-bootloader.img"
         AMLOGIC_SOC="s905x3"
         ;;
-    s905x2 | x96max4g | x96max2g)
+    s905x2 | E900V22C)
         FDTFILE="meson-g12a-e900v22c.dtb"
         UBOOT_OVERLOAD="e900v22c-u-boot.bin"
         MAINLINE_UBOOT="/lib/e900v22c-u-boot.bin.sd.bin"
