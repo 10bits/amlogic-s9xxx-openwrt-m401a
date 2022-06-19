@@ -100,6 +100,8 @@ jobs:
         if: steps.compile.outputs.status == 'success' && !cancelled()
         id: build
         run: |
+          [ -d openwrt-armvirt ] || mkdir -p openwrt-armvirt
+          cp -f openwrt/bin/targets/*/*/*.tar.gz openwrt-armvirt/ && sync
           sudo chmod +x make
           sudo ./make -d -b s905x2-E900V22C -k 5.4.170 -s 512
           [ -d ipk ] || mkdir -p ipk
